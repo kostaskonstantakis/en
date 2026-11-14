@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "watch:css",
+			"label": "npm: watch:css",
+			"detail": "Rebuild Tailwind CSS whenever source files change",
+			"isBackground": true,
+			"problemMatcher": [],
+			"runOptions": {
+				"runOn": "folderOpen"
+			}
+		}
+	]
+}
