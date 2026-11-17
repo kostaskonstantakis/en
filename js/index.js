@@ -300,7 +300,12 @@ function renderEducationSection() {
     // Language switcher
     var langFilter = document.getElementById('language-filter') || document.querySelector('.language-filter');
     if (langFilter) {
-        function updateLanguage() {
+        function getLanguageFromPath() {
+            var pathLanguage = window.location.pathname.split('/').filter(Boolean)[0];
+            return window.translations[pathLanguage] ? pathLanguage : null;
+        }
+
+        function updateLanguage(updateUrl, replaceUrl) {
             currentLang = langFilter.value;
             var navigation = window.translations[currentLang].navigation;
             var navigationMenu = document.querySelector('.main-navigation nav');
@@ -404,17 +409,38 @@ function renderEducationSection() {
             applyTypeFilter();
             // Save to localStorage
             try { localStorage.setItem('language', currentLang); } catch (e) {}
+
+            var languagePath = '/' + currentLang;
+            if (updateUrl && window.location.pathname !== languagePath) {
+                window.history.pushState(null, '', languagePath + window.location.search + window.location.hash);
+            } else if (replaceUrl && window.location.pathname !== languagePath) {
+                window.history.replaceState(null, '', languagePath + window.location.search + window.location.hash);
+            }
         }
-        // Load from localStorage
+
+        // The URL takes precedence so language links work when opened directly.
+        var pathLanguage = getLanguageFromPath();
         try {
             var savedLang = localStorage.getItem('language');
-            if (savedLang && window.translations[savedLang]) {
+            if (!pathLanguage && savedLang && window.translations[savedLang]) {
                 currentLang = savedLang;
-                langFilter.value = savedLang;
             }
         } catch (e) {}
-        updateLanguage();
-        langFilter.addEventListener('change', updateLanguage);
+        if (pathLanguage) {
+            currentLang = pathLanguage;
+        }
+        langFilter.value = currentLang;
+        updateLanguage(false, !pathLanguage);
+        langFilter.addEventListener('change', function() {
+            updateLanguage(true, false);
+        });
+        window.addEventListener('popstate', function() {
+            var historyLanguage = getLanguageFromPath();
+            if (historyLanguage) {
+                langFilter.value = historyLanguage;
+                updateLanguage(false, false);
+            }
+        });
     }
 })();
 
